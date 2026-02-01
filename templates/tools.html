@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tools Management - Sales Copilot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['DM Sans', 'system-ui', '-apple-system', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        .modal-backdrop { background: rgba(17, 24, 39, 0.75); backdrop-filter: blur(4px); }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .slide-in { animation: slideIn 0.3s ease-out; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 via-slate-50/30 to-gray-50 text-gray-900 min-h-screen font-sans">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 px-4 py-4 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-gradient-to-br from-slate-500 to-slate-600 rounded-xl flex items-center justify-center shadow-lg shadow-slate-500/25">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-gray-900">Tools Management</h1>
+                    <p class="text-gray-500 text-sm">Configure AI function tools for agents</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <a href="/dashboard" class="px-4 py-2 bg-gray-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-300 text-gray-600 hover:text-blue-700 rounded-xl text-sm font-medium transition-all">
+                    Agents
+                </a>
+                <a href="/products" class="px-4 py-2 bg-gray-50 hover:bg-green-50 border border-gray-200 hover:border-green-300 text-gray-600 hover:text-green-700 rounded-xl text-sm font-medium transition-all">
+                    Products
+                </a>
+                <a href="/reports" class="px-4 py-2 bg-gray-50 hover:bg-yellow-50 border border-gray-200 hover:border-yellow-300 text-gray-600 hover:text-yellow-700 rounded-xl text-sm font-medium transition-all">
+                    Reports
+                </a>
+                <a href="/" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium shadow-lg shadow-indigo-500/25 transition-all">
+                    Back to App
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <main class="max-w-6xl mx-auto p-6">
+
+        <!-- Create Button -->
+        <div class="mb-6">
+            <button onclick="openCreateModal()"
+                class="px-6 py-3 bg-slate-600 hover:bg-slate-500 text-white rounded-xl font-semibold shadow-lg shadow-slate-500/25 transition-all flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Create New Tool
+            </button>
+        </div>
+
+        <!-- Tools Grid -->
+        <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Tool cards will be inserted here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-20">
+            <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+            </div>
+            <p class="text-gray-500 text-lg mb-2">No tools created yet</p>
+            <p class="text-gray-400 text-sm mb-6">Create function tools for AI agents to use during calls</p>
+            <button onclick="openCreateModal()"
+                class="px-6 py-3 bg-slate-600 hover:bg-slate-500 text-white rounded-xl font-semibold shadow-lg shadow-slate-500/25 transition-all">
+                Create Your First Tool
+            </button>
+        </div>
+    </main>
+
+    <!-- Modal -->
+    <div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col slide-in">
+            <div class="px-6 py-5 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-slate-500 to-slate-600 rounded-xl flex items-center justify-center shadow-lg shadow-slate-500/25">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                    <h2 id="modalTitle" class="text-lg font-bold text-gray-900">Create Tool</h2>
+                </div>
+                <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <form id="toolForm" onsubmit="handleSubmit(event)" class="flex-1 overflow-y-auto p-6 space-y-5">
+                <input type="hidden" id="toolId" value="">
+
+                <!-- Name -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Function Name *</label>
+                    <input type="text" id="toolName" required
+                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 font-mono focus:ring-2 focus:ring-slate-500/30 focus:border-slate-400 transition-all"
+                        placeholder="e.g., recommend_product, schedule_meeting">
+                    <p class="text-xs text-gray-500 mt-2">Use snake_case (e.g., my_function_name)</p>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                    <textarea id="toolDescription" required rows="3"
+                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:ring-2 focus:ring-slate-500/30 focus:border-slate-400 transition-all"
+                        placeholder="Describe when the AI should use this tool. Be specific about what it does and when to call it."></textarea>
+                    <p class="text-xs text-gray-500 mt-2">This helps the AI understand when to use this tool</p>
+                </div>
+
+                <!-- Parameters (JSON) -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-sm font-medium text-gray-700">Parameters (JSON Schema) *</label>
+                        <button type="button" onclick="formatJson()"
+                            class="text-xs text-indigo-600 hover:text-indigo-700 font-medium">
+                            Format JSON
+                        </button>
+                    </div>
+                    <textarea id="toolParameters" required rows="10"
+                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 font-mono text-sm focus:ring-2 focus:ring-slate-500/30 focus:border-slate-400 transition-all"
+                        placeholder='{"type": "object", "properties": {...}, "required": [...]}'></textarea>
+                    <p class="text-xs text-gray-500 mt-2">JSON Schema defining the function parameters</p>
+                    <p id="jsonError" class="text-xs text-red-600 mt-2 hidden font-medium"></p>
+                </div>
+
+                <!-- Templates -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Quick Templates</label>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" onclick="useTemplate('product')"
+                            class="px-4 py-2 bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 hover:border-green-300 rounded-xl text-sm font-medium transition-all">
+                            Product Recommendation
+                        </button>
+                        <button type="button" onclick="useTemplate('simple')"
+                            class="px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 hover:border-gray-300 rounded-xl text-sm font-medium transition-all">
+                            Simple (No Params)
+                        </button>
+                        <button type="button" onclick="useTemplate('text')"
+                            class="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 hover:border-blue-300 rounded-xl text-sm font-medium transition-all">
+                            Text Input
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                    <button type="button" onclick="closeModal()"
+                        class="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-all">
+                        Cancel
+                    </button>
+                    <button type="submit" id="submitBtn"
+                        class="px-6 py-2.5 bg-slate-600 hover:bg-slate-500 text-white rounded-xl font-semibold shadow-lg shadow-slate-500/25 transition-all">
+                        Create Tool
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    // ============ STATE ============
+    let tools = [];
+    let editingToolId = null;
+
+    // ============ TEMPLATES ============
+    const TEMPLATES = {
+        product: {
+            name: 'recommend_product',
+            description: 'Recommend products to the customer. IMPORTANT: Always include ALL relevant product IDs in a single call - do not make separate calls for each product.',
+            parameters: {
+                "type": "object",
+                "properties": {
+                    "product_ids": {
+                        "type": "array",
+                        "items": {"type": "integer"},
+                        "description": "Array of ALL product IDs to recommend in one call"
+                    },
+                    "reason": {
+                        "type": "string",
+                        "description": "Brief reason for the recommendation"
+                    }
+                },
+                "required": ["product_ids"]
+            }
+        },
+        simple: {
+            name: 'my_function',
+            description: 'Description of what this function does',
+            parameters: {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        },
+        text: {
+            name: 'send_message',
+            description: 'Send a message or note',
+            parameters: {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "description": "The message content"
+                    }
+                },
+                "required": ["message"]
+            }
+        }
+    };
+
+    // ============ LOAD TOOLS ============
+    async function loadTools() {
+        try {
+            const res = await fetch('/api/tools');
+            tools = await res.json();
+            renderTools();
+        } catch (err) {
+            console.error('Failed to load tools:', err);
+        }
+    }
+
+    function renderTools() {
+        const grid = document.getElementById('toolsGrid');
+        const emptyState = document.getElementById('emptyState');
+
+        if (tools.length === 0) {
+            grid.classList.add('hidden');
+            emptyState.classList.remove('hidden');
+            return;
+        }
+
+        grid.classList.remove('hidden');
+        emptyState.classList.add('hidden');
+
+        grid.innerHTML = tools.map(tool => {
+            let params = {};
+            try {
+                params = JSON.parse(tool.parameters || '{}');
+            } catch (e) {}
+
+            const propCount = Object.keys(params.properties || {}).length;
+            const requiredCount = (params.required || []).length;
+
+            return `
+            <div class="bg-white rounded-2xl p-5 border border-gray-200 hover:border-slate-300 hover:shadow-lg transition-all duration-200 group">
+                <div class="flex items-start gap-4 mb-4">
+                    <div class="w-11 h-11 bg-gradient-to-br from-slate-100 to-indigo-100 rounded-xl flex items-center justify-center group-hover:from-slate-200 group-hover:to-indigo-200 transition-colors flex-shrink-0">
+                        <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-mono font-semibold text-slate-600 truncate">${escapeHtml(tool.name)}</h3>
+                        <p class="text-gray-500 text-sm mt-1 line-clamp-2">${escapeHtml(tool.description || 'No description')}</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-medium">${propCount} properties</span>
+                    <span class="px-3 py-1 bg-slate-50 text-slate-700 rounded-lg text-xs font-medium">${requiredCount} required</span>
+                </div>
+
+                <div class="bg-gray-50 rounded-xl p-3 mb-4 max-h-32 overflow-auto border border-gray-100">
+                    <pre class="text-xs text-gray-600 font-mono whitespace-pre-wrap">${escapeHtml(formatJsonPreview(tool.parameters))}</pre>
+                </div>
+
+                <div class="flex gap-2">
+                    <button onclick="openEditModal(${tool.id})"
+                        class="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-slate-100 text-gray-700 hover:text-slate-700 rounded-xl text-sm font-medium transition-all">
+                        Edit
+                    </button>
+                    <button onclick="deleteTool(${tool.id})"
+                        class="px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 rounded-xl text-sm font-medium transition-all">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        `}).join('');
+    }
+
+    function formatJsonPreview(jsonStr) {
+        try {
+            return JSON.stringify(JSON.parse(jsonStr || '{}'), null, 2);
+        } catch (e) {
+            return jsonStr || '{}';
+        }
+    }
+
+    // ============ MODAL ============
+    function openCreateModal() {
+        editingToolId = null;
+        document.getElementById('modalTitle').textContent = 'Create Tool';
+        document.getElementById('submitBtn').textContent = 'Create Tool';
+        document.getElementById('toolForm').reset();
+        document.getElementById('toolId').value = '';
+        document.getElementById('toolParameters').value = JSON.stringify(TEMPLATES.simple.parameters, null, 2);
+        document.getElementById('jsonError').classList.add('hidden');
+        document.getElementById('modal').classList.remove('hidden');
+    }
+
+    function openEditModal(id) {
+        const tool = tools.find(t => t.id === id);
+        if (!tool) return;
+
+        editingToolId = id;
+        document.getElementById('modalTitle').textContent = 'Edit Tool';
+        document.getElementById('submitBtn').textContent = 'Save Changes';
+        document.getElementById('toolId').value = id;
+        document.getElementById('toolName').value = tool.name;
+        document.getElementById('toolDescription').value = tool.description || '';
+        document.getElementById('toolParameters').value = formatJsonPreview(tool.parameters);
+        document.getElementById('jsonError').classList.add('hidden');
+        document.getElementById('modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+        document.getElementById('modal').classList.add('hidden');
+        editingToolId = null;
+    }
+
+    function useTemplate(type) {
+        const template = TEMPLATES[type];
+        if (!template) return;
+
+        document.getElementById('toolName').value = template.name;
+        document.getElementById('toolDescription').value = template.description;
+        document.getElementById('toolParameters').value = JSON.stringify(template.parameters, null, 2);
+    }
+
+    function formatJson() {
+        const textarea = document.getElementById('toolParameters');
+        const errorEl = document.getElementById('jsonError');
+
+        try {
+            const parsed = JSON.parse(textarea.value);
+            textarea.value = JSON.stringify(parsed, null, 2);
+            errorEl.classList.add('hidden');
+        } catch (e) {
+            errorEl.textContent = 'Invalid JSON: ' + e.message;
+            errorEl.classList.remove('hidden');
+        }
+    }
+
+    // ============ FORM SUBMIT ============
+    async function handleSubmit(event) {
+        event.preventDefault();
+
+        const parametersStr = document.getElementById('toolParameters').value;
+        const errorEl = document.getElementById('jsonError');
+
+        // Validate JSON
+        try {
+            JSON.parse(parametersStr);
+            errorEl.classList.add('hidden');
+        } catch (e) {
+            errorEl.textContent = 'Invalid JSON: ' + e.message;
+            errorEl.classList.remove('hidden');
+            return;
+        }
+
+        const data = {
+            name: document.getElementById('toolName').value,
+            description: document.getElementById('toolDescription').value,
+            parameters: parametersStr
+        };
+
+        try {
+            let res;
+            if (editingToolId) {
+                res = await fetch(`/api/tools/${editingToolId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+            } else {
+                res = await fetch('/api/tools', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+            }
+
+            if (res.ok) {
+                closeModal();
+                loadTools();
+            } else {
+                const err = await res.json();
+                alert('Error: ' + (err.detail || 'Failed to save tool'));
+            }
+        } catch (err) {
+            console.error('Submit error:', err);
+            alert('Failed to save tool');
+        }
+    }
+
+    // ============ DELETE ============
+    async function deleteTool(id) {
+        if (!confirm('Are you sure you want to delete this tool? Agents using this tool will need to be updated.')) return;
+
+        try {
+            const res = await fetch(`/api/tools/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                loadTools();
+            } else {
+                alert('Failed to delete tool');
+            }
+        } catch (err) {
+            console.error('Delete error:', err);
+            alert('Failed to delete tool');
+        }
+    }
+
+    // ============ UTILS ============
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Close modal on Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal();
+    });
+
+    // Close modal on backdrop click
+    document.getElementById('modal').addEventListener('click', (e) => {
+        if (e.target.id === 'modal') closeModal();
+    });
+
+    // Init
+    loadTools();
+    </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+# Environment variables (contains API keys)
+.env
+
+# Claude Code
+.claude/
+
+# Database
+*.db
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

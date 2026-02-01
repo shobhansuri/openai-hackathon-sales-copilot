@@ -1,0 +1,1954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Copilot - AI-Powered Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['DM Sans', 'system-ui', '-apple-system', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.05); } }
+        @keyframes glow { 0%, 100% { box-shadow: 0 0 15px rgba(79, 70, 229, 0.3); } 50% { box-shadow: 0 0 30px rgba(79, 70, 229, 0.5); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        .pulse { animation: pulse 2s infinite; }
+        .glow { animation: glow 2s infinite; }
+        .slide-in { animation: slideIn 0.3s ease-out; }
+        .float { animation: float 3s ease-in-out infinite; }
+        .scrollbar-thin::-webkit-scrollbar { height: 6px; width: 6px; }
+        .scrollbar-thin::-webkit-scrollbar-track { background: #F3F4F6; border-radius: 3px; }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background: #C7D2FE; border-radius: 3px; }
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #A5B4FC; }
+        .card { background: white; border: 1px solid #E5E7EB; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .card:hover { box-shadow: 0 10px 25px rgba(79, 70, 229, 0.08); border-color: #A5B4FC; }
+        .coach-card { background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%); border: 1px solid #C7D2FE; }
+        .product-card { background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%); border: 1px solid #BFDBFE; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 via-indigo-50/30 to-gray-50 text-gray-900 min-h-screen font-sans">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center shadow-lg shadow-teal-500/25">
+                    <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/>
+                    </svg>
+                </div>
+                <div class="flex items-center gap-3">
+                    <h1 class="text-lg font-bold text-gray-900">Sales Copilot</h1>
+                    <span class="px-2.5 py-1 bg-black text-white text-xs font-semibold rounded-full">OpenAI Hackathon</span>
+                </div>
+            </div>
+            <div id="status" class="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 border border-gray-200">
+                <span class="w-2 h-2 rounded-full bg-gray-400"></span>
+                <span class="text-xs font-medium text-gray-500">Disconnected</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <main class="max-w-6xl mx-auto p-4">
+
+        <!-- Controls -->
+        <div class="flex flex-wrap items-center gap-3 mb-5 p-4 bg-white rounded-2xl shadow-sm border border-gray-200">
+            <select id="agentSelect"
+                class="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-700 min-w-[160px] focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-all cursor-pointer hover:border-indigo-300">
+                <option value="">Loading agents...</option>
+            </select>
+            <button id="startBtn" onclick="startCopilot()"
+                class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-sm font-semibold text-white transition-all shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Start Session
+            </button>
+            <button id="stopBtn" onclick="stopCopilot()"
+                class="px-5 py-2.5 bg-red-600 hover:bg-red-500 rounded-xl text-sm font-semibold text-white transition-all shadow-lg shadow-red-500/25 hidden flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path>
+                </svg>
+                Stop
+            </button>
+
+            <div class="h-8 w-px bg-gray-200 mx-1"></div>
+
+            <button id="pipBtn" onclick="openPiPWindow()"
+                class="px-3 py-2 bg-gray-50 hover:bg-indigo-50 border border-gray-200 hover:border-indigo-300 rounded-xl text-xs text-gray-600 hover:text-indigo-600 transition-all flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+                </svg>
+                Float
+            </button>
+            <button onclick="togglePromptEditor()"
+                class="px-3 py-2 bg-gray-50 hover:bg-purple-50 border border-gray-200 hover:border-purple-300 rounded-xl text-xs text-gray-600 hover:text-purple-600 transition-all flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+                Prompt
+            </button>
+            <div class="relative">
+                <button onclick="toggleDashboardMenu()" id="dashboardBtn"
+                    class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-xs font-medium text-white transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                    </svg>
+                    Dashboard
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="dashboardMenu" class="hidden absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden slide-in">
+                    <a href="/dashboard" target="_blank" class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
+                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        </div>
+                        Agents
+                    </a>
+                    <a href="/products" target="_blank" class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors border-t border-gray-100">
+                        <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                        </div>
+                        Products
+                    </a>
+                    <a href="/tools" target="_blank" class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors border-t border-gray-100">
+                        <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        </div>
+                        Tools
+                    </a>
+                    <a href="/reports" target="_blank" class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-yellow-50 hover:text-yellow-700 transition-colors border-t border-gray-100">
+                        <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        </div>
+                        Reports
+                    </a>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 ml-auto">
+                <label class="flex items-center gap-2 text-xs text-gray-500 cursor-pointer hover:text-indigo-600 transition-colors">
+                    <input type="checkbox" id="audioEnabled" checked class="w-4 h-4 rounded bg-gray-100 border-gray-300 text-indigo-600 focus:ring-indigo-500/50">
+                    <span>Voice</span>
+                </label>
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
+                    </svg>
+                    <input type="range" id="volumeSlider" min="0" max="100" value="30"
+                        class="w-20 h-1.5 bg-gray-200 rounded-full appearance-none cursor-pointer accent-indigo-500" title="Volume">
+                    <span class="text-xs text-gray-500 w-8" id="volumeLabel">30%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prompt Editor (collapsible) -->
+        <div id="promptEditor" class="hidden mb-4 p-5 bg-white rounded-xl border border-gray-200 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">System Prompt</h3>
+                <div class="flex gap-2">
+                    <button onclick="resetPrompt()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-xs font-medium transition">
+                        Reset
+                    </button>
+                    <button onclick="savePrompt()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-medium transition shadow-sm">
+                        Save
+                    </button>
+                </div>
+            </div>
+            <textarea id="systemPrompt" rows="8"
+                class="w-full bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm text-gray-700 font-mono resize-y focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400"
+                placeholder="Enter system prompt..."></textarea>
+            <p id="promptStatus" class="text-xs text-gray-500 mt-2"></p>
+        </div>
+
+        <!-- Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+            <!-- Left: Screen + Conversation -->
+            <div class="lg:col-span-2 space-y-4">
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 hover:shadow-md hover:border-indigo-200 transition-all duration-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 bg-indigo-100 rounded-xl flex items-center justify-center">
+                                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-sm font-semibold text-gray-900">Screen Share</span>
+                        </div>
+                        <span id="recordingDot" class="hidden flex items-center gap-2 px-3 py-1.5 bg-red-50 border border-red-200 rounded-full">
+                            <span class="w-2 h-2 rounded-full bg-red-500 pulse"></span>
+                            <span class="text-red-600 text-xs font-semibold">LIVE</span>
+                        </span>
+                    </div>
+                    <video id="screenVideo" autoplay muted class="w-full rounded-xl bg-gray-900 aspect-video shadow-inner border border-gray-200"></video>
+                    <canvas id="screenshotCanvas" class="hidden"></canvas>
+                </div>
+
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 hover:shadow-md hover:border-green-200 transition-all duration-200">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-semibold text-gray-900">Live Transcript</h3>
+                    </div>
+                    <div id="conversation" class="h-32 overflow-y-auto space-y-2 text-sm scrollbar-thin pr-2">
+                        <p class="text-gray-400 italic text-center py-8">Conversation will appear here...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Suggestions -->
+            <div class="space-y-4">
+                <!-- AI Coach Card -->
+                <div class="bg-gradient-to-br from-indigo-50 to-indigo-100/50 rounded-2xl p-5 shadow-sm border border-indigo-200 hover:shadow-md hover:border-indigo-300 transition-all duration-200">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/25 float">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-semibold text-indigo-700 uppercase tracking-wide">AI Coach</h3>
+                    </div>
+                    <p id="currentSuggestion" class="text-sm leading-relaxed text-gray-700 min-h-[60px]">
+                        Ready to assist. Start the session to receive real-time coaching...
+                    </p>
+                </div>
+
+                <!-- Product Recommendation Cards -->
+                <div id="productCardsSection" class="hidden bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-2xl p-5 shadow-sm border border-blue-200 slide-in">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-semibold text-blue-700 uppercase tracking-wide">Recommended</h3>
+                    </div>
+                    <div id="productCardsContainer" class="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
+                        <!-- Product cards inserted here dynamically -->
+                    </div>
+                    <p id="productReason" class="text-xs text-blue-600 mt-3 italic hidden bg-blue-100 rounded-lg p-3 border-l-3 border-blue-400"></p>
+                </div>
+
+                <!-- History -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-200">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-9 h-9 bg-orange-100 rounded-xl flex items-center justify-center">
+                            <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-semibold text-gray-900">Suggestion History</h3>
+                    </div>
+                    <div id="suggestionHistory" class="h-40 overflow-y-auto space-y-2 text-sm scrollbar-thin pr-2">
+                        <p class="text-gray-400 italic text-center py-8">Past suggestions will appear here...</p>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-200">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-100">
+                            <p class="text-2xl font-bold text-green-600" id="tipCount">0</p>
+                            <p class="text-[10px] text-green-600/70 uppercase tracking-wider font-semibold mt-1">Tips Given</p>
+                        </div>
+                        <div class="text-center p-4 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl border border-indigo-100">
+                            <p class="text-2xl font-bold text-indigo-600" id="sessionTime">00:00</p>
+                            <p class="text-[10px] text-indigo-600/70 uppercase tracking-wider font-semibold mt-1">Session Time</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Hidden audio element for AI responses -->
+    <audio id="aiAudio" autoplay></audio>
+
+    <script>
+    // ============ DEFAULT PROMPT ============
+    const DEFAULT_PROMPT = `You are the user's live sales call copilot. You can see their screen and hear the conversation.
+
+MOST IMPORTANT RULE: Only respond when there is a DIRECT QUESTION that needs answering.
+
+WHEN TO RESPOND (in priority order):
+1. A question is asked that you can answer - THIS IS MOST IMPORTANT
+2. Customer raises an objection that needs a response
+3. Critical buying signal the seller might miss
+
+WHEN TO STAY COMPLETELY SILENT:
+- Normal conversation - SILENT
+- Small talk - SILENT
+- Customer explaining things - SILENT
+- Seller is handling it fine - SILENT
+- No question asked - SILENT
+
+RESPONSE FORMAT:
+- Headline answer (max 6 words)
+- One supporting point if needed (max 15 words)
+
+EXAMPLES:
+- "Price is $99/month. Mention the free trial."
+- "They have 50 employees. Good fit for Pro plan."
+- "Buying signal. Ask about timeline."
+
+Stay silent unless you have something truly valuable to add.`;
+
+    // ============ STATE ============
+    let peerConnection = null;
+    let dataChannel = null;
+    let screenStream = null;
+    let micStream = null;
+    let audioContext = null;
+    let screenshotInterval = null;
+    let sessionInterval = null;
+    let sessionSeconds = 0;
+    let tipCount = 0;
+    let currentSuggestionText = '';
+    let agents = [];
+    let products = [];
+    let pendingToolCall = null;
+    let conversationLog = [];
+    let selectedAgentId = null;
+
+    // ============ LOAD AGENTS ============
+    async function loadAgents() {
+        try {
+            const res = await fetch('/api/agents');
+            agents = await res.json();
+
+            const select = document.getElementById('agentSelect');
+
+            if (agents.length === 0) {
+                select.innerHTML = '<option value="">No agents - create one</option>';
+                return;
+            }
+
+            select.innerHTML = agents.map(a =>
+                `<option value="${a.id}">${escapeHtml(a.name)}</option>`
+            ).join('');
+
+            // Restore last used agent
+            const lastAgentId = localStorage.getItem('lastAgentId');
+            if (lastAgentId && agents.some(a => a.id == lastAgentId)) {
+                select.value = lastAgentId;
+                // Sync voice checkbox with agent's default
+                const agent = agents.find(a => a.id == lastAgentId);
+                if (agent) {
+                    document.getElementById('audioEnabled').checked = agent.voice_enabled;
+                }
+            } else if (agents.length > 0) {
+                // Select first agent and sync voice
+                select.value = agents[0].id;
+                document.getElementById('audioEnabled').checked = agents[0].voice_enabled;
+            }
+        } catch (err) {
+            console.error('Failed to load agents:', err);
+            document.getElementById('agentSelect').innerHTML = '<option value="">Error loading</option>';
+        }
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Save selected agent and sync voice checkbox
+    document.getElementById('agentSelect').addEventListener('change', (e) => {
+        if (e.target.value) {
+            localStorage.setItem('lastAgentId', e.target.value);
+            // Sync voice checkbox with agent's default
+            const agent = agents.find(a => a.id == e.target.value);
+            if (agent) {
+                document.getElementById('audioEnabled').checked = agent.voice_enabled;
+            }
+        }
+    });
+
+    // ============ LOAD PRODUCTS ============
+    async function loadProducts() {
+        try {
+            const res = await fetch('/api/products');
+            products = await res.json();
+            console.log('Loaded products:', products.length);
+        } catch (err) {
+            console.error('Failed to load products:', err);
+        }
+    }
+
+    // ============ PROMPT EDITOR ============
+    function initPromptEditor() {
+        const saved = localStorage.getItem('salesCopilotPrompt');
+        const textarea = document.getElementById('systemPrompt');
+        textarea.value = saved || DEFAULT_PROMPT;
+        updatePromptStatus();
+    }
+
+    function togglePromptEditor() {
+        const editor = document.getElementById('promptEditor');
+        editor.classList.toggle('hidden');
+    }
+
+    function savePrompt() {
+        const textarea = document.getElementById('systemPrompt');
+        const prompt = textarea.value.trim();
+        if (prompt) {
+            localStorage.setItem('salesCopilotPrompt', prompt);
+            updatePromptStatus();
+            showPromptMessage('Saved!', 'green');
+        }
+    }
+
+    function resetPrompt() {
+        const textarea = document.getElementById('systemPrompt');
+        textarea.value = DEFAULT_PROMPT;
+        localStorage.removeItem('salesCopilotPrompt');
+        updatePromptStatus();
+        showPromptMessage('Reset to default', 'gray');
+    }
+
+    function getCustomPrompt() {
+        return localStorage.getItem('salesCopilotPrompt') || DEFAULT_PROMPT;
+    }
+
+    function updatePromptStatus() {
+        const status = document.getElementById('promptStatus');
+        const isCustom = localStorage.getItem('salesCopilotPrompt') !== null;
+        status.textContent = isCustom ? 'Using custom prompt' : 'Using default prompt';
+        status.className = isCustom ? 'text-xs text-indigo-600 mt-2 font-medium' : 'text-xs text-gray-500 mt-2';
+    }
+
+    function showPromptMessage(msg, color) {
+        const status = document.getElementById('promptStatus');
+        const colorMap = { green: 'text-green-600', gray: 'text-gray-500', blue: 'text-indigo-600' };
+        status.textContent = msg;
+        status.className = `text-xs ${colorMap[color] || 'text-gray-500'} mt-2 font-medium`;
+        setTimeout(() => {
+            updatePromptStatus();
+        }, 1500);
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', () => {
+        initPromptEditor();
+        loadAgents();
+        loadProducts();
+    });
+
+    // ============ DASHBOARD DROPDOWN ============
+    function toggleDashboardMenu() {
+        const menu = document.getElementById('dashboardMenu');
+        menu.classList.toggle('hidden');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        const btn = document.getElementById('dashboardBtn');
+        const menu = document.getElementById('dashboardMenu');
+        if (!btn.contains(e.target) && !menu.contains(e.target)) {
+            menu.classList.add('hidden');
+        }
+    });
+
+    // ============ START/STOP ============
+
+    async function startCopilot() {
+        try {
+            // Check if agent is selected
+            const agentId = document.getElementById('agentSelect').value;
+            if (!agentId) {
+                alert('Please select an agent first, or create one in the dashboard.');
+                return;
+            }
+
+            // Reset conversation log for new session
+            conversationLog = [];
+            selectedAgentId = parseInt(agentId);
+
+            updateStatus('Getting token...', 'yellow');
+
+            // 1. Get ephemeral token from our backend with agent config
+            const voiceEnabled = document.getElementById('audioEnabled').checked;
+            const tokenRes = await fetch('/api/token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    agent_id: parseInt(agentId),
+                    voice_enabled: voiceEnabled
+                })
+            });
+            const tokenData = await tokenRes.json();
+
+            console.log('Token response:', tokenData);
+            console.log('=== SESSION CONFIG ===');
+            console.log('📋 Tools configured:', tokenData.tools ? tokenData.tools.map(t => t.name) : 'none');
+
+            // Token is in client_secret.value
+            if (!tokenData.client_secret || !tokenData.client_secret.value) {
+                throw new Error('Failed to get token: ' + JSON.stringify(tokenData));
+            }
+
+            const ephemeralKey = tokenData.client_secret.value;
+            console.log('🔑 Got ephemeral key:', ephemeralKey.substring(0, 10) + '...');
+
+            updateStatus('Requesting permissions...', 'yellow');
+
+            // 2. Get screen share (for preview and screenshots)
+            screenStream = await navigator.mediaDevices.getDisplayMedia({
+                video: { cursor: 'always' },
+                audio: true
+            });
+            document.getElementById('screenVideo').srcObject = screenStream;
+
+            // 3. Get microphone
+            micStream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true
+                }
+            });
+
+            updateStatus('Connecting via WebRTC...', 'yellow');
+
+            // 4. Create WebRTC peer connection
+            peerConnection = new RTCPeerConnection();
+
+            // 5. Set up audio playback from AI
+            const aiAudio = document.getElementById('aiAudio');
+            peerConnection.ontrack = (event) => {
+                console.log('Got audio track from AI');
+                aiAudio.srcObject = event.streams[0];
+                if (!document.getElementById('audioEnabled').checked) {
+                    aiAudio.muted = true;
+                }
+            };
+
+            // 6. Mix microphone + screen audio and send to AI
+            audioContext = new AudioContext();
+            const micSource = audioContext.createMediaStreamSource(micStream);
+
+            // Check if screen has audio
+            const screenAudioTracks = screenStream.getAudioTracks();
+            const destination = audioContext.createMediaStreamDestination();
+
+            if (screenAudioTracks.length > 0) {
+                console.log('Mixing mic + screen audio');
+                const screenSource = audioContext.createMediaStreamSource(screenStream);
+
+                // Create gain nodes to control volume
+                const micGain = audioContext.createGain();
+                const screenGain = audioContext.createGain();
+                micGain.gain.value = 1.0;
+                screenGain.gain.value = 1.0;
+
+                // Connect both to destination
+                micSource.connect(micGain);
+                screenGain.connect(destination);
+                micGain.connect(destination);
+                screenSource.connect(screenGain);
+            } else {
+                console.log('No screen audio, using mic only');
+                micSource.connect(destination);
+            }
+
+            // Add the mixed audio track to WebRTC
+            const mixedStream = destination.stream;
+            mixedStream.getAudioTracks().forEach(track => {
+                peerConnection.addTrack(track, mixedStream);
+            });
+
+            // 7. Create data channel for events
+            dataChannel = peerConnection.createDataChannel('oai-events');
+            dataChannel.onopen = () => {
+                console.log('Data channel open');
+                updateStatus('Connected!', 'green');
+                startScreenshotCapture();
+                startSessionTimer();
+            };
+            dataChannel.onmessage = (event) => {
+                handleOpenAIEvent(JSON.parse(event.data));
+            };
+            dataChannel.onerror = (error) => {
+                console.error('Data channel error:', error);
+            };
+
+            // 8. Create and send SDP offer
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+
+            console.log('Sending SDP to OpenAI...');
+            const sdpResponse = await fetch('https://api.openai.com/v1/realtime/calls?model=gpt-4o-realtime-preview-2024-12-17', {
+                method: 'POST',
+                body: offer.sdp,
+                headers: {
+                    'Authorization': `Bearer ${ephemeralKey}`,
+                    'Content-Type': 'application/sdp',
+                    'OpenAI-Beta': 'realtime=v1'  // Required for Beta
+                }
+            });
+
+            if (!sdpResponse.ok) {
+                const errorText = await sdpResponse.text();
+                throw new Error(`SDP exchange failed: ${sdpResponse.status} - ${errorText}`);
+            }
+
+            const answerSdp = await sdpResponse.text();
+            console.log('Got SDP answer from OpenAI');
+
+            await peerConnection.setRemoteDescription({
+                type: 'answer',
+                sdp: answerSdp
+            });
+
+            // Handle when user stops screen share
+            screenStream.getVideoTracks()[0].onended = () => {
+                stopCopilot();
+            };
+
+            // UI updates
+            document.getElementById('startBtn').classList.add('hidden');
+            document.getElementById('stopBtn').classList.remove('hidden');
+            document.getElementById('recordingDot').classList.remove('hidden');
+
+            // Auto-open floating window
+            openPiPWindow();
+
+        } catch (err) {
+            console.error('Start error:', err);
+            updateStatus('Error: ' + err.message, 'red');
+            stopCopilot();
+        }
+    }
+
+    async function stopCopilot() {
+        const finalDuration = sessionSeconds;
+
+        if (dataChannel) {
+            dataChannel.close();
+            dataChannel = null;
+        }
+        if (peerConnection) {
+            peerConnection.close();
+            peerConnection = null;
+        }
+        if (audioContext) {
+            audioContext.close();
+            audioContext = null;
+        }
+        if (screenStream) {
+            screenStream.getTracks().forEach(t => t.stop());
+            screenStream = null;
+        }
+        if (micStream) {
+            micStream.getTracks().forEach(t => t.stop());
+            micStream = null;
+        }
+        if (screenshotInterval) {
+            clearInterval(screenshotInterval);
+            screenshotInterval = null;
+        }
+        if (sessionInterval) {
+            clearInterval(sessionInterval);
+            sessionInterval = null;
+        }
+
+        document.getElementById('startBtn').classList.remove('hidden');
+        document.getElementById('stopBtn').classList.add('hidden');
+        document.getElementById('recordingDot').classList.add('hidden');
+        updateStatus('Disconnected', 'gray');
+
+        // Generate report if there was any conversation
+        if (conversationLog.length > 0 && finalDuration > 10) {
+            await generateAndShowReport(finalDuration);
+        }
+    }
+
+    async function generateAndShowReport(duration) {
+        updateStatus('Generating report...', 'yellow');
+
+        try {
+            const res = await fetch('/api/reports/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    agent_id: selectedAgentId,
+                    conversation: conversationLog,
+                    duration_seconds: duration
+                })
+            });
+
+            if (res.ok) {
+                const report = await res.json();
+                showReportModal(report);
+                updateStatus('Report generated', 'green');
+            } else {
+                console.error('Failed to generate report');
+                updateStatus('Disconnected', 'gray');
+            }
+        } catch (err) {
+            console.error('Report generation error:', err);
+            updateStatus('Disconnected', 'gray');
+        }
+    }
+
+    function showReportModal(report) {
+        let highlights = [];
+        let tips = [];
+        try {
+            highlights = JSON.parse(report.highlights || '[]');
+            tips = JSON.parse(report.coaching_tips || '[]');
+        } catch (e) {}
+
+        const modalHtml = `
+            <div id="reportModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(17, 24, 39, 0.75); backdrop-filter: blur(4px);">
+                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col slide-in">
+                    <!-- Header -->
+                    <div class="px-6 py-5 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-indigo-50 to-white">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/25">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="text-lg font-bold text-gray-900">Call Report</h2>
+                                <p class="text-xs text-gray-500">Session completed successfully</p>
+                            </div>
+                        </div>
+                        <button onclick="closeReportModal()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="flex-1 overflow-y-auto p-6 space-y-4">
+                        <!-- Summary -->
+                        <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Summary</h3>
+                            <p class="text-gray-700 leading-relaxed">${escapeHtml(report.summary || 'No summary available')}</p>
+                        </div>
+
+                        <!-- Highlights -->
+                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 border border-green-200">
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-7 h-7 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                </div>
+                                <h3 class="text-sm font-semibold text-green-700">What Went Well</h3>
+                            </div>
+                            ${highlights.length > 0 ? `
+                                <ul class="space-y-2">
+                                    ${highlights.map(h => `<li class="flex gap-3 text-gray-700 text-sm"><span class="text-green-500 font-bold">✓</span>${escapeHtml(h)}</li>`).join('')}
+                                </ul>
+                            ` : '<p class="text-gray-500 text-sm italic">No highlights recorded</p>'}
+                        </div>
+
+                        <!-- Coaching Tips -->
+                        <div class="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl p-5 border border-yellow-200">
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-7 h-7 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                </div>
+                                <h3 class="text-sm font-semibold text-yellow-700">Areas to Improve</h3>
+                            </div>
+                            ${tips.length > 0 ? `
+                                <ul class="space-y-2">
+                                    ${tips.map(t => `<li class="flex gap-3 text-gray-700 text-sm"><span class="text-yellow-600 font-bold">→</span>${escapeHtml(t)}</li>`).join('')}
+                                </ul>
+                            ` : '<p class="text-gray-500 text-sm italic">No coaching tips</p>'}
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="px-6 py-4 border-t border-gray-200 flex justify-between items-center bg-gray-50">
+                        <a href="/reports" target="_blank" class="text-indigo-600 hover:text-indigo-700 text-sm font-medium flex items-center gap-1">
+                            View All Reports
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        </a>
+                        <button onclick="closeReportModal()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium shadow-lg shadow-indigo-500/25 transition-all">
+                            Done
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+
+    function closeReportModal() {
+        const modal = document.getElementById('reportModal');
+        if (modal) modal.remove();
+    }
+
+    // ============ SCREENSHOT CAPTURE ============
+
+    function startScreenshotCapture() {
+        // Capture immediately, then every 15 seconds (less frequent to reduce noise)
+        captureAndAnalyzeScreenshot();
+        screenshotInterval = setInterval(captureAndAnalyzeScreenshot, 10000);
+    }
+
+    async function captureAndAnalyzeScreenshot() {
+        const video = document.getElementById('screenVideo');
+        const canvas = document.getElementById('screenshotCanvas');
+
+        if (video.videoWidth === 0) return;
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+
+        const base64 = canvas.toDataURL('image/jpeg', 0.5).split(',')[1];
+
+        try {
+            const res = await fetch('/api/analyze-screenshot', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: base64 })
+            });
+            const data = await res.json();
+
+            // Send context to AI via data channel (don't request response - let AI decide)
+            if (dataChannel && dataChannel.readyState === 'open' && data.context) {
+                console.log('Screen context:', data.context);
+                dataChannel.send(JSON.stringify({
+                    type: 'conversation.item.create',
+                    item: {
+                        type: 'message',
+                        role: 'system',
+                        content: [{
+                            type: 'input_text',
+                            text: `[SCREEN UPDATE - DO NOT RESPOND UNLESS CRITICAL]: ${data.context}`
+                        }]
+                    }
+                }));
+                // DON'T request response - let the AI only respond to actual conversation
+            }
+        } catch (err) {
+            console.error('Screenshot analysis error:', err);
+        }
+    }
+
+    // ============ HANDLE OPENAI EVENTS ============
+
+    function handleOpenAIEvent(event) {
+        console.log('OpenAI event:', event.type);
+
+        switch (event.type) {
+            case 'session.created':
+            case 'session.updated':
+                console.log('Session ready');
+                break;
+
+            // GA event names
+            case 'response.output_audio_transcript.delta':
+            case 'response.output_text.delta':
+                currentSuggestionText += event.delta || '';
+                document.getElementById('currentSuggestion').textContent = currentSuggestionText;
+                break;
+
+            // Beta event names (fallback)
+            case 'response.audio_transcript.delta':
+            case 'response.text.delta':
+                currentSuggestionText += event.delta || '';
+                document.getElementById('currentSuggestion').textContent = currentSuggestionText;
+                break;
+
+            case 'conversation.item.input_audio_transcription.completed':
+                addToConversation('You', event.transcript);
+                // Log for report
+                if (event.transcript && event.transcript.trim()) {
+                    conversationLog.push({
+                        role: 'user',
+                        text: event.transcript,
+                        timestamp: Date.now()
+                    });
+                }
+                break;
+
+            case 'response.done':
+                finalizeSuggestion();
+                break;
+
+            // Tool call handling
+            case 'response.function_call_arguments.delta':
+                // Accumulate function arguments
+                if (!pendingToolCall) {
+                    pendingToolCall = { name: event.name || '', arguments: '' };
+                    console.log('📥 Tool call started:', event.name);
+                }
+                pendingToolCall.arguments += event.delta || '';
+                console.log('📥 Tool arg delta:', event.delta);
+                break;
+
+            case 'response.function_call_arguments.done':
+                // Function call complete
+                console.log('✅ Tool call complete:', event.name);
+                console.log('   Arguments:', event.arguments);
+                handleToolCall(event.name, event.arguments);
+                pendingToolCall = null;
+                break;
+
+            // Alternative event names for tool calls
+            case 'response.output_item.added':
+                if (event.item && event.item.type === 'function_call') {
+                    console.log('📥 Function call item added:', event.item.name);
+                }
+                break;
+
+            case 'response.output_item.done':
+                if (event.item && event.item.type === 'function_call') {
+                    console.log('✅ Function call done:', event.item.name, event.item.arguments);
+                    handleToolCall(event.item.name, event.item.arguments);
+                }
+                break;
+
+            case 'error':
+                console.error('OpenAI error:', event.error);
+                updateStatus('Error: ' + (event.error?.message || 'Unknown'), 'red');
+                break;
+
+            default:
+                // Log other events for debugging
+                if (event.type.includes('error')) {
+                    console.error('Error event:', event);
+                }
+        }
+    }
+
+    // ============ TOOL CALL HANDLING ============
+
+    function handleToolCall(toolName, argsStr) {
+        try {
+            const args = typeof argsStr === 'string' ? JSON.parse(argsStr) : argsStr;
+            console.log('🔧 Processing tool call:', toolName);
+            console.log('   Parsed args:', args);
+
+            if (toolName === 'recommend_product' || toolName === 'display_product') {
+                console.log('🛍️ Tool is product-related, showing cards...');
+                // Support both array (new) and single ID (backward compat)
+                const productIds = args.product_ids || (args.product_id ? [args.product_id] : []);
+                showProductCards(productIds, args.reason);
+            } else {
+                console.log('⚠️ Unknown tool:', toolName);
+            }
+        } catch (err) {
+            console.error('❌ Error handling tool call:', err);
+        }
+    }
+
+    function showProductCards(productIds, reason) {
+        console.log('🛍️ showProductCards called with IDs:', productIds, 'Reason:', reason);
+        console.log('   Available products:', products.map(p => ({id: p.id, name: p.name})));
+
+        const section = document.getElementById('productCardsSection');
+        const container = document.getElementById('productCardsContainer');
+        const reasonEl = document.getElementById('productReason');
+
+        // Clear existing cards
+        container.innerHTML = '';
+
+        // Find and create cards for each product
+        const foundProducts = [];
+        productIds.forEach(id => {
+            const product = products.find(p => p.id === id);
+            if (product) {
+                foundProducts.push(product);
+                container.appendChild(createProductCardElement(product));
+                console.log('✅ Added card for:', product.name);
+            } else {
+                console.warn('❌ Product not found! ID:', id);
+            }
+        });
+
+        if (foundProducts.length === 0) {
+            console.warn('❌ No products found for IDs:', productIds);
+            return;
+        }
+
+        // Log tool call for report
+        const productNames = foundProducts.map(p => p.name).join(', ');
+        conversationLog.push({
+            role: 'tool',
+            text: `Recommended: ${productNames}${reason ? ' - ' + reason : ''}`,
+            timestamp: Date.now()
+        });
+
+        // Set reason if provided
+        if (reason) {
+            reasonEl.textContent = `💡 ${reason}`;
+            reasonEl.classList.remove('hidden');
+        } else {
+            reasonEl.classList.add('hidden');
+        }
+
+        // Show the section
+        section.classList.remove('hidden');
+
+        // Also update PiP window if open
+        updatePiPProductCards(foundProducts, reason);
+    }
+
+    function createProductCardElement(product) {
+        const card = document.createElement('div');
+        card.className = 'flex-shrink-0 w-48 bg-white rounded-xl p-3 border border-blue-200 shadow-sm hover:border-blue-400 hover:shadow-md transition-all duration-200';
+
+        const imageHtml = product.image_url
+            ? `<img src="${escapeHtml(product.image_url)}" alt="${escapeHtml(product.name)}" class="w-full h-28 rounded-lg object-cover bg-gray-100 mb-3 border border-gray-200">`
+            : `<div class="w-full h-28 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 mb-3 flex items-center justify-center border border-blue-100">
+                <svg class="w-8 h-8 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+               </div>`;
+
+        const priceHtml = product.price
+            ? `<p class="text-green-600 text-sm font-bold">${product.price}</p>`
+            : `<p class="text-gray-400 text-xs italic">Contact for pricing</p>`;
+
+        const linkHtml = product.url
+            ? `<a href="${escapeHtml(product.url)}" target="_blank" class="mt-3 flex items-center justify-center gap-1 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-xs font-medium text-white transition-all shadow-md shadow-indigo-500/20">
+                <span>View Product</span>
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+               </a>`
+            : '';
+
+        card.innerHTML = `
+            ${imageHtml}
+            <p class="font-semibold text-sm text-gray-900 truncate mb-1" title="${escapeHtml(product.name)}">${escapeHtml(product.name)}</p>
+            ${priceHtml}
+            <p class="text-gray-500 text-xs mt-1 line-clamp-2 leading-relaxed">${escapeHtml(product.description || '')}</p>
+            ${linkHtml}
+        `;
+
+        return card;
+    }
+
+    function hideProductCards() {
+        document.getElementById('productCardsSection').classList.add('hidden');
+    }
+
+    function updatePiPProductCards(foundProducts, reason) {
+        if (!pipWindow || pipWindow.closed) return;
+
+        try {
+            // Check if product section exists in PiP
+            let productSection = pipWindow.document.getElementById('pip-product');
+            if (!productSection) {
+                // Create product section in PiP
+                const feed = pipWindow.document.getElementById('pip-feed');
+                if (feed) {
+                    productSection = pipWindow.document.createElement('div');
+                    productSection.id = 'pip-product';
+                    productSection.className = 'products-section';
+                    feed.parentNode.insertBefore(productSection, feed);
+                }
+            }
+
+            if (productSection) {
+                const productsHtml = foundProducts.map(p => {
+                    const imageHtml = p.image_url
+                        ? `<img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}" class="product-image">`
+                        : `<div class="product-image-placeholder">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                           </div>`;
+                    const priceHtml = p.price
+                        ? `<div class="product-price">${p.price}</div>`
+                        : `<div class="product-price" style="color:#94A3B8;font-size:10px;font-weight:400;">Contact for pricing</div>`;
+
+                    const linkHtml = p.url
+                        ? `<a href="${escapeHtml(p.url)}" target="_blank" class="product-btn">View</a>`
+                        : '';
+
+                    return `
+                        <div class="product-card">
+                            ${imageHtml}
+                            <div class="product-name" title="${escapeHtml(p.name)}">${escapeHtml(p.name)}</div>
+                            ${priceHtml}
+                            ${linkHtml}
+                        </div>
+                    `;
+                }).join('');
+
+                productSection.innerHTML = `
+                    <div class="products-header">
+                        <div class="products-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                        </div>
+                        <div class="products-title">Recommended (${foundProducts.length})</div>
+                    </div>
+                    <div class="products-scroll">
+                        ${productsHtml}
+                    </div>
+                    ${reason ? `<div class="product-reason">💡 ${escapeHtml(reason)}</div>` : ''}
+                `;
+            }
+        } catch (e) {
+            console.error('Error updating PiP product cards:', e);
+        }
+    }
+
+    // ============ UI HELPERS ============
+
+    function finalizeSuggestion() {
+        const text = currentSuggestionText.trim().toLowerCase();
+        const originalText = currentSuggestionText.trim();
+
+        // Filter out empty or minimal responses
+        if (!text || text.length < 5) {
+            currentSuggestionText = '';
+            return;
+        }
+
+        // Filter out "no response needed" type messages
+        const skipPhrases = ['silent', 'no response', 'nothing to add', 'listening', '...', 'okay', 'ok'];
+        if (skipPhrases.some(phrase => text.includes(phrase))) {
+            currentSuggestionText = '';
+            return;
+        }
+
+        // Log AI response for report
+        conversationLog.push({
+            role: 'ai',
+            text: originalText,
+            timestamp: Date.now()
+        });
+
+        tipCount++;
+        document.getElementById('tipCount').textContent = tipCount;
+
+        const history = document.getElementById('suggestionHistory');
+        if (tipCount === 1) history.innerHTML = '';
+
+        const div = document.createElement('div');
+        div.className = 'p-3 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-100 rounded-xl text-xs text-gray-700 slide-in';
+        div.innerHTML = `<span class="text-orange-600 font-semibold">${tipCount}.</span> ${escapeHtml(currentSuggestionText)}`;
+        history.insertBefore(div, history.firstChild);
+
+        currentSuggestionText = '';
+    }
+
+    function addToConversation(speaker, text) {
+        if (!text || !text.trim()) return;
+
+        const conv = document.getElementById('conversation');
+        if (conv.querySelector('.italic')) {
+            conv.innerHTML = '';
+        }
+
+        const div = document.createElement('div');
+        div.className = 'p-3 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 text-xs slide-in';
+        div.innerHTML = `<span class="text-indigo-600 font-semibold">${speaker}:</span> <span class="text-gray-700">${text}</span>`;
+        conv.appendChild(div);
+        conv.scrollTop = conv.scrollHeight;
+    }
+
+    function updateStatus(text, color) {
+        const configs = {
+            green: { bg: 'bg-green-50', border: 'border-green-200', dot: 'bg-green-500', text: 'text-green-700' },
+            yellow: { bg: 'bg-yellow-50', border: 'border-yellow-200', dot: 'bg-yellow-500', text: 'text-yellow-700' },
+            red: { bg: 'bg-red-50', border: 'border-red-200', dot: 'bg-red-500', text: 'text-red-700' },
+            gray: { bg: 'bg-gray-100', border: 'border-gray-200', dot: 'bg-gray-400', text: 'text-gray-500' }
+        };
+        const cfg = configs[color] || configs.gray;
+        document.getElementById('status').className = `flex items-center gap-2 px-4 py-2 rounded-full ${cfg.bg} border ${cfg.border}`;
+        document.getElementById('status').innerHTML = `
+            <span class="w-2 h-2 rounded-full ${cfg.dot} ${color === 'green' ? 'pulse' : ''}"></span>
+            <span class="text-xs font-medium ${cfg.text}">${text}</span>
+        `;
+    }
+
+    function startSessionTimer() {
+        sessionSeconds = 0;
+        sessionInterval = setInterval(() => {
+            sessionSeconds++;
+            const m = Math.floor(sessionSeconds / 60).toString().padStart(2, '0');
+            const s = (sessionSeconds % 60).toString().padStart(2, '0');
+            document.getElementById('sessionTime').textContent = `${m}:${s}`;
+        }, 1000);
+    }
+
+    // Toggle AI audio
+    document.getElementById('audioEnabled').addEventListener('change', (e) => {
+        const aiAudio = document.getElementById('aiAudio');
+        aiAudio.muted = !e.target.checked;
+    });
+
+    // Volume control
+    document.getElementById('volumeSlider').addEventListener('input', (e) => {
+        const volume = e.target.value / 100;
+        const aiAudio = document.getElementById('aiAudio');
+        aiAudio.volume = volume;
+        document.getElementById('volumeLabel').textContent = e.target.value + '%';
+    });
+
+    // Set initial volume
+    document.addEventListener('DOMContentLoaded', () => {
+        const aiAudio = document.getElementById('aiAudio');
+        aiAudio.volume = 0.3; // 30% default
+    });
+
+    // Cleanup on page unload
+    window.onbeforeunload = stopCopilot;
+
+    // ============ PICTURE-IN-PICTURE FLOATING WINDOW ============
+    let pipWindow = null;
+
+    async function openPiPWindow() {
+        // Try Document Picture-in-Picture API first (Chrome 116+)
+        if ('documentPictureInPicture' in window) {
+            try {
+                pipWindow = await documentPictureInPicture.requestWindow({
+                    width: 340,
+                    height: 500
+                });
+
+                // Style the PiP window with Theme 2 design
+                const style = pipWindow.document.createElement('style');
+                style.textContent = `
+                    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+                    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+                    @keyframes pulse {
+                        0%, 100% { opacity: 1; transform: scale(1); }
+                        50% { opacity: 0.7; transform: scale(1.1); }
+                    }
+                    @keyframes shimmer {
+                        0% { background-position: -200% 0; }
+                        100% { background-position: 200% 0; }
+                    }
+                    @keyframes float {
+                        0%, 100% { transform: translateY(0); }
+                        50% { transform: translateY(-3px); }
+                    }
+                    @keyframes borderGlow {
+                        0%, 100% { border-color: rgba(99, 102, 241, 0.4); box-shadow: 0 0 20px rgba(99, 102, 241, 0.1); }
+                        50% { border-color: rgba(99, 102, 241, 0.8); box-shadow: 0 0 30px rgba(99, 102, 241, 0.25); }
+                    }
+                    @keyframes slideIn {
+                        from { opacity: 0; transform: translateY(-8px); }
+                        to { opacity: 1; transform: translateY(0); }
+                    }
+
+                    body {
+                        background: linear-gradient(160deg, #F9FAFB 0%, #EEF2FF 50%, #E0E7FF 100%);
+                        color: #111827;
+                        font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+                        height: 100vh;
+                        display: flex;
+                        flex-direction: column;
+                        overflow: hidden;
+                    }
+
+                    /* Header - Compact */
+                    .header {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        padding: 12px 16px;
+                        background: white;
+                        border-bottom: 1px solid #E5E7EB;
+                        flex-shrink: 0;
+                    }
+                    .header-icon {
+                        width: 28px;
+                        height: 28px;
+                        background: linear-gradient(135deg, #14B8A6 0%, #0D9488 100%);
+                        border-radius: 8px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                    .header-icon svg { width: 16px; height: 16px; fill: white; }
+                    .header-title {
+                        flex: 1;
+                        font-size: 14px;
+                        font-weight: 600;
+                        color: #111827;
+                    }
+                    .status-badge {
+                        display: flex;
+                        align-items: center;
+                        gap: 5px;
+                        padding: 4px 8px;
+                        background: #DCFCE7;
+                        border-radius: 12px;
+                    }
+                    .status-dot {
+                        width: 6px;
+                        height: 6px;
+                        background: #16A34A;
+                        border-radius: 50%;
+                        animation: pulse 1.5s infinite;
+                    }
+                    .status-text {
+                        font-size: 10px;
+                        font-weight: 600;
+                        color: #16A34A;
+                        text-transform: uppercase;
+                    }
+
+                    /* Current Message - Clean Card */
+                    .msg.current {
+                        margin: 12px;
+                        padding: 14px 16px;
+                        background: white;
+                        border: 1px solid #E0E7FF;
+                        border-radius: 12px;
+                        font-size: 14px;
+                        font-weight: 500;
+                        line-height: 1.5;
+                        color: #374151;
+                        flex-shrink: 0;
+                    }
+                    .msg.current .coach-label {
+                        display: flex;
+                        align-items: center;
+                        gap: 5px;
+                        margin-bottom: 8px;
+                        font-size: 10px;
+                        font-weight: 600;
+                        color: #4F46E5;
+                        text-transform: uppercase;
+                        letter-spacing: 0.03em;
+                    }
+                    .msg.current .coach-label svg {
+                        width: 12px;
+                        height: 12px;
+                    }
+
+                    /* Products Section */
+                    .products-section {
+                        margin: 0 16px 16px;
+                        padding: 14px;
+                        background: linear-gradient(135deg, #EEF2FF 0%, #F0F9FF 100%);
+                        border: 1px solid #DBEAFE;
+                        border-radius: 14px;
+                        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.06);
+                        animation: slideIn 0.3s ease-out;
+                    }
+                    .products-header {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        margin-bottom: 12px;
+                    }
+                    .products-icon {
+                        width: 28px;
+                        height: 28px;
+                        background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+                        border-radius: 8px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                    .products-icon svg {
+                        width: 14px;
+                        height: 14px;
+                        stroke: #2563EB;
+                    }
+                    .products-title {
+                        font-size: 11px;
+                        color: #2563EB;
+                        text-transform: uppercase;
+                        letter-spacing: 0.05em;
+                        font-weight: 600;
+                    }
+                    .products-scroll {
+                        display: flex;
+                        gap: 10px;
+                        overflow-x: auto;
+                        padding-bottom: 8px;
+                        scroll-snap-type: x mandatory;
+                        -webkit-overflow-scrolling: touch;
+                    }
+                    .products-scroll::-webkit-scrollbar {
+                        height: 4px;
+                    }
+                    .products-scroll::-webkit-scrollbar-track {
+                        background: #E0E7FF;
+                        border-radius: 2px;
+                    }
+                    .products-scroll::-webkit-scrollbar-thumb {
+                        background: #818CF8;
+                        border-radius: 2px;
+                    }
+                    .product-card {
+                        flex-shrink: 0;
+                        width: 130px;
+                        padding: 10px;
+                        background: white;
+                        border-radius: 12px;
+                        border: 1px solid #BFDBFE;
+                        transition: all 0.2s ease;
+                        scroll-snap-align: start;
+                    }
+                    .product-card:hover {
+                        border-color: #60A5FA;
+                        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+                        transform: translateY(-2px);
+                    }
+                    .product-image {
+                        width: 100%;
+                        height: 70px;
+                        border-radius: 8px;
+                        margin-bottom: 8px;
+                        object-fit: cover;
+                        background: #F8FAFC;
+                    }
+                    .product-image-placeholder {
+                        width: 100%;
+                        height: 70px;
+                        border-radius: 8px;
+                        margin-bottom: 8px;
+                        background: linear-gradient(135deg, #EEF2FF 0%, #DBEAFE 100%);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border: 1px solid #BFDBFE;
+                    }
+                    .product-image-placeholder svg {
+                        width: 24px;
+                        height: 24px;
+                        stroke: #93C5FD;
+                    }
+                    .product-name {
+                        font-size: 12px;
+                        font-weight: 600;
+                        color: #1E293B;
+                        margin-bottom: 4px;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+                    .product-price {
+                        font-size: 13px;
+                        color: #16A34A;
+                        font-weight: 700;
+                        margin-bottom: 4px;
+                    }
+                    .product-desc {
+                        font-size: 10px;
+                        color: #64748B;
+                        line-height: 1.3;
+                        display: -webkit-box;
+                        -webkit-line-clamp: 2;
+                        -webkit-box-orient: vertical;
+                        overflow: hidden;
+                    }
+                    .product-btn {
+                        display: block;
+                        margin-top: 8px;
+                        padding: 6px 10px;
+                        background: #0D9488;
+                        color: white;
+                        font-size: 10px;
+                        font-weight: 600;
+                        text-align: center;
+                        text-decoration: none;
+                        border-radius: 6px;
+                        transition: background 0.2s;
+                    }
+                    .product-btn:hover {
+                        background: #14B8A6;
+                    }
+                    .product-reason {
+                        margin-top: 10px;
+                        padding: 10px 12px;
+                        background: white;
+                        border-radius: 8px;
+                        font-size: 11px;
+                        color: #4338CA;
+                        font-style: italic;
+                        border-left: 3px solid #6366F1;
+                    }
+
+                    /* Feed - Past Messages */
+                    .feed {
+                        flex: 1;
+                        overflow-y: auto;
+                        padding: 0 12px 12px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 6px;
+                    }
+                    .feed:empty, .feed:not(:has(.msg.past)) {
+                        display: none;
+                    }
+                    .feed-header {
+                        display: none;
+                    }
+                    .feed:has(.msg.past) .feed-header {
+                        display: flex;
+                        align-items: center;
+                        gap: 5px;
+                        padding: 6px 0;
+                        font-size: 9px;
+                        font-weight: 600;
+                        color: #9CA3AF;
+                        text-transform: uppercase;
+                        letter-spacing: 0.03em;
+                    }
+                    .feed-header svg {
+                        width: 10px;
+                        height: 10px;
+                    }
+                    .msg.past {
+                        padding: 10px 12px;
+                        background: white;
+                        border-radius: 10px;
+                        font-size: 12px;
+                        line-height: 1.4;
+                        color: #6B7280;
+                        border-left: 2px solid #E0E7FF;
+                        animation: slideIn 0.2s ease-out;
+                    }
+
+                    /* Scrollbar */
+                    ::-webkit-scrollbar { width: 5px; }
+                    ::-webkit-scrollbar-track { background: transparent; }
+                    ::-webkit-scrollbar-thumb {
+                        background: #C7D2FE;
+                        border-radius: 10px;
+                    }
+                    ::-webkit-scrollbar-thumb:hover {
+                        background: #A5B4FC;
+                    }
+
+                    /* Empty state */
+                    .empty-state {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 24px;
+                        color: #9CA3AF;
+                        text-align: center;
+                    }
+                    .empty-state svg {
+                        width: 32px;
+                        height: 32px;
+                        margin-bottom: 8px;
+                        opacity: 0.5;
+                    }
+                `;
+                pipWindow.document.head.appendChild(style);
+
+                // Add content with Theme 2 design
+                pipWindow.document.body.innerHTML = `
+                    <div class="header">
+                        <div class="header-icon">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/></svg>
+                        </div>
+                        <div class="header-title">Sales Copilot</div>
+                        <div class="status-badge">
+                            <div class="status-dot"></div>
+                            <span class="status-text">Live</span>
+                        </div>
+                    </div>
+                    <div class="msg current" id="pip-current">
+                        <span class="content">Listening...</span>
+                    </div>
+                    <div class="feed" id="pip-feed">
+                        <div class="feed-header">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Previous
+                        </div>
+                    </div>
+                `;
+
+                // Sync current suggestion
+                updatePiPContent();
+
+                console.log('Document PiP window opened');
+                return;
+            } catch (err) {
+                console.log('Document PiP failed, trying popup:', err);
+            }
+        }
+
+        // Fallback: Regular popup window with Theme 2 design
+        pipWindow = window.open('', 'Sales Copilot', 'width=380,height=560,top=100,left=100,toolbar=no,menubar=no,scrollbars=no,resizable=yes');
+
+        if (pipWindow) {
+            pipWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Sales Copilot - AI Coach</title>
+                    <link rel="preconnect" href="https://fonts.googleapis.com">
+                    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+                    <style>
+                        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+                        @keyframes pulse {
+                            0%, 100% { opacity: 1; transform: scale(1); }
+                            50% { opacity: 0.7; transform: scale(1.1); }
+                        }
+                        @keyframes shimmer {
+                            0% { background-position: -200% 0; }
+                            100% { background-position: 200% 0; }
+                        }
+                        @keyframes float {
+                            0%, 100% { transform: translateY(0); }
+                            50% { transform: translateY(-3px); }
+                        }
+                        @keyframes borderGlow {
+                            0%, 100% { border-color: rgba(99, 102, 241, 0.4); box-shadow: 0 0 20px rgba(99, 102, 241, 0.1); }
+                            50% { border-color: rgba(99, 102, 241, 0.8); box-shadow: 0 0 30px rgba(99, 102, 241, 0.25); }
+                        }
+                        @keyframes slideIn {
+                            from { opacity: 0; transform: translateY(-8px); }
+                            to { opacity: 1; transform: translateY(0); }
+                        }
+
+                        body {
+                            background: linear-gradient(160deg, #F9FAFB 0%, #EEF2FF 50%, #E0E7FF 100%);
+                            color: #111827;
+                            font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+                            height: 100vh;
+                            display: flex;
+                            flex-direction: column;
+                            overflow: hidden;
+                        }
+
+                        .header {
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                            padding: 12px 16px;
+                            background: white;
+                            border-bottom: 1px solid #E5E7EB;
+                            flex-shrink: 0;
+                        }
+                        .header-icon {
+                            width: 28px;
+                            height: 28px;
+                            background: linear-gradient(135deg, #14B8A6 0%, #0D9488 100%);
+                            border-radius: 8px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        }
+                        .header-icon svg { width: 16px; height: 16px; fill: white; }
+                        .header-title {
+                            flex: 1;
+                            font-size: 14px;
+                            font-weight: 600;
+                            color: #111827;
+                        }
+                        .status-badge {
+                            display: flex;
+                            align-items: center;
+                            gap: 5px;
+                            padding: 4px 8px;
+                            background: #DCFCE7;
+                            border-radius: 12px;
+                        }
+                        .status-dot {
+                            width: 6px;
+                            height: 6px;
+                            background: #16A34A;
+                            border-radius: 50%;
+                            animation: pulse 1.5s infinite;
+                        }
+                        .status-text {
+                            font-size: 10px;
+                            font-weight: 600;
+                            color: #16A34A;
+                            text-transform: uppercase;
+                        }
+
+                        .msg.current {
+                            margin: 12px;
+                            padding: 14px 16px;
+                            background: white;
+                            border: 1px solid #E0E7FF;
+                            border-radius: 12px;
+                            font-size: 14px;
+                            font-weight: 500;
+                            line-height: 1.5;
+                            color: #374151;
+                            flex-shrink: 0;
+                        }
+                        .msg.current .coach-label {
+                            display: flex;
+                            align-items: center;
+                            gap: 5px;
+                            margin-bottom: 8px;
+                            font-size: 10px;
+                            font-weight: 600;
+                            color: #4F46E5;
+                            text-transform: uppercase;
+                            letter-spacing: 0.03em;
+                        }
+                        .msg.current .coach-label svg { width: 12px; height: 12px; }
+
+                        .products-section {
+                            margin: 0 16px 16px;
+                            padding: 14px;
+                            background: linear-gradient(135deg, #EEF2FF 0%, #F0F9FF 100%);
+                            border: 1px solid #DBEAFE;
+                            border-radius: 14px;
+                            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.06);
+                            animation: slideIn 0.3s ease-out;
+                        }
+                        .products-header {
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                            margin-bottom: 12px;
+                        }
+                        .products-icon {
+                            width: 28px;
+                            height: 28px;
+                            background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+                            border-radius: 8px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        }
+                        .products-icon svg { width: 14px; height: 14px; stroke: #2563EB; }
+                        .products-title {
+                            font-size: 11px;
+                            color: #2563EB;
+                            text-transform: uppercase;
+                            letter-spacing: 0.05em;
+                            font-weight: 600;
+                        }
+                        .products-scroll {
+                            display: flex;
+                            gap: 10px;
+                            overflow-x: auto;
+                            padding-bottom: 8px;
+                            scroll-snap-type: x mandatory;
+                            -webkit-overflow-scrolling: touch;
+                        }
+                        .products-scroll::-webkit-scrollbar { height: 4px; }
+                        .products-scroll::-webkit-scrollbar-track { background: #E0E7FF; border-radius: 2px; }
+                        .products-scroll::-webkit-scrollbar-thumb { background: #818CF8; border-radius: 2px; }
+                        .product-card {
+                            flex-shrink: 0;
+                            width: 130px;
+                            padding: 10px;
+                            background: white;
+                            border-radius: 12px;
+                            border: 1px solid #BFDBFE;
+                            transition: all 0.2s ease;
+                            scroll-snap-align: start;
+                        }
+                        .product-card:hover {
+                            border-color: #60A5FA;
+                            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+                            transform: translateY(-2px);
+                        }
+                        .product-image {
+                            width: 100%;
+                            height: 70px;
+                            border-radius: 8px;
+                            margin-bottom: 8px;
+                            object-fit: cover;
+                            background: #F8FAFC;
+                        }
+                        .product-image-placeholder {
+                            width: 100%;
+                            height: 70px;
+                            border-radius: 8px;
+                            margin-bottom: 8px;
+                            background: linear-gradient(135deg, #EEF2FF 0%, #DBEAFE 100%);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            border: 1px solid #BFDBFE;
+                        }
+                        .product-image-placeholder svg { width: 24px; height: 24px; stroke: #93C5FD; }
+                        .product-name { font-size: 12px; font-weight: 600; color: #1E293B; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+                        .product-price { font-size: 13px; color: #16A34A; font-weight: 700; margin-bottom: 4px; }
+                        .product-desc { font-size: 10px; color: #64748B; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+                        .product-btn { display: block; margin-top: 8px; padding: 6px 10px; background: #0D9488; color: white; font-size: 10px; font-weight: 600; text-align: center; text-decoration: none; border-radius: 6px; transition: background 0.2s; }
+                        .product-btn:hover { background: #14B8A6; }
+                        .product-reason {
+                            margin-top: 10px;
+                            padding: 10px 12px;
+                            background: white;
+                            border-radius: 8px;
+                            font-size: 11px;
+                            color: #4338CA;
+                            font-style: italic;
+                            border-left: 3px solid #6366F1;
+                        }
+
+                        .feed {
+                            flex: 1;
+                            overflow-y: auto;
+                            padding: 0 12px 12px;
+                            display: flex;
+                            flex-direction: column;
+                            gap: 6px;
+                        }
+                        .feed:empty, .feed:not(:has(.msg.past)) { display: none; }
+                        .feed-header { display: none; }
+                        .feed:has(.msg.past) .feed-header {
+                            display: flex;
+                            align-items: center;
+                            gap: 5px;
+                            padding: 6px 0;
+                            font-size: 9px;
+                            font-weight: 600;
+                            color: #9CA3AF;
+                            text-transform: uppercase;
+                            letter-spacing: 0.03em;
+                        }
+                        .feed-header svg { width: 10px; height: 10px; }
+                        .msg.past {
+                            padding: 10px 12px;
+                            background: white;
+                            border-radius: 10px;
+                            font-size: 12px;
+                            line-height: 1.4;
+                            color: #6B7280;
+                            border-left: 2px solid #E0E7FF;
+                            animation: slideIn 0.2s ease-out;
+                        }
+
+                        ::-webkit-scrollbar { width: 5px; }
+                        ::-webkit-scrollbar-track { background: transparent; }
+                        ::-webkit-scrollbar-thumb { background: #C7D2FE; border-radius: 10px; }
+                        ::-webkit-scrollbar-thumb:hover { background: #A5B4FC; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <div class="header-icon">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/></svg>
+                        </div>
+                        <div class="header-title">Sales Copilot</div>
+                        <div class="status-badge">
+                            <div class="status-dot"></div>
+                            <span class="status-text">Live</span>
+                        </div>
+                    </div>
+                    <div class="msg current" id="pip-current">
+                        <span class="content">Listening...</span>
+                    </div>
+                    <div class="feed" id="pip-feed">
+                        <div class="feed-header">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Previous
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `);
+            pipWindow.document.close();
+
+            // Sync current suggestion
+            updatePiPContent();
+
+            console.log('Popup window opened');
+        }
+    }
+
+    function updatePiPContent() {
+        if (!pipWindow || pipWindow.closed) return;
+
+        try {
+            const currentEl = pipWindow.document.getElementById('pip-current');
+            if (currentEl) {
+                const text = currentSuggestionText || 'Listening for conversation...';
+                currentEl.innerHTML = `
+                    <div class="coach-label">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        AI Suggestion
+                    </div>
+                    <span class="content">${escapeHtml(text)}</span>
+                `;
+            }
+        } catch (e) {
+            // Window might be closed
+        }
+    }
+
+    function finalizePiPSuggestion(text) {
+        if (!pipWindow || pipWindow.closed || !text) return;
+
+        try {
+            const feed = pipWindow.document.getElementById('pip-feed');
+            const currentEl = pipWindow.document.getElementById('pip-current');
+
+            if (feed && currentEl) {
+                // Reset current to listening
+                currentEl.innerHTML = `
+                    <div class="coach-label">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        AI Suggestion
+                    </div>
+                    <span class="content">Listening for conversation...</span>
+                `;
+
+                // Find the feed header to insert after it
+                const feedHeader = feed.querySelector('.feed-header');
+                const insertAfter = feedHeader || null;
+
+                // Add past message after header
+                const pastMsg = pipWindow.document.createElement('div');
+                pastMsg.className = 'msg past';
+                pastMsg.textContent = text;
+
+                if (insertAfter && insertAfter.nextSibling) {
+                    feed.insertBefore(pastMsg, insertAfter.nextSibling);
+                } else if (insertAfter) {
+                    feed.appendChild(pastMsg);
+                } else {
+                    feed.insertBefore(pastMsg, feed.firstChild);
+                }
+            }
+        } catch (e) {
+            // Window might be closed
+        }
+    }
+
+    // Override finalizeSuggestion to also update PiP
+    const originalFinalizeSuggestion = finalizeSuggestion;
+    finalizeSuggestion = function() {
+        const textToFinalize = currentSuggestionText;
+        originalFinalizeSuggestion();
+        finalizePiPSuggestion(textToFinalize);
+    };
+
+    // Update PiP when suggestion text changes
+    const originalHandleEvent = handleOpenAIEvent;
+    handleOpenAIEvent = function(event) {
+        originalHandleEvent(event);
+        if (event.type.includes('delta') || event.type.includes('transcript')) {
+            updatePiPContent();
+        }
+    };
+    </script>
+</body>
+</html>
