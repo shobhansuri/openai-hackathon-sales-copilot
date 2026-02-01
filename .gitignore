@@ -4,8 +4,8 @@
 # Claude Code
 .claude/
 
-# Database
-*.db
+# Database (included for demo purposes)
+# *.db
 
 # Python
 venv/
