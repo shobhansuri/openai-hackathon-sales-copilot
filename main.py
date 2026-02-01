@@ -867,6 +867,22 @@ async def get_realtime_session_token(req: TokenRequest):
         product_context = "\n\nPRODUCT CATALOG (use product IDs when calling tools):\n" + "\n".join(product_lines)
         instructions = instructions + product_context
 
+    # Add highlight tool instructions
+    highlight_instructions = """
+
+IMPORTANT - VISUAL HIGHLIGHTING:
+When you mention specific details like prices, features, or product names that are visible on the user's screen, USE the highlight_ui_element tool to visually highlight that text. This creates a powerful sync between what you say and what the user sees.
+
+CRITICAL: When highlighting prices, use ONLY the number without currency symbols (₹, $, etc.) because the product cards show just the number.
+
+Examples:
+- Price "19.99 lakh" → call highlight_ui_element(text_to_find="19.99")
+- Product "Kia Seltos" → call highlight_ui_element(text_to_find="Kia Seltos")
+- Feature "Sunroof" → call highlight_ui_element(text_to_find="Sunroof")
+
+Always highlight key details as you mention them to draw the user's attention."""
+    instructions = instructions + highlight_instructions
+
     # Set modalities based on voice_enabled
     modalities = ["text", "audio"] if voice_enabled else ["text"]
 
@@ -880,9 +896,26 @@ async def get_realtime_session_token(req: TokenRequest):
             "parameters": json_module.loads(tool["parameters"]) if tool["parameters"] else {"type": "object", "properties": {}}
         })
 
-    # Build session config
+    # Built-in tool: highlight_ui_element for visual sync between voice and UI
+    openai_tools.append({
+        "type": "function",
+        "name": "highlight_ui_element",
+        "description": "Visually highlight text on screen when talking about it to draw user attention. Use this when mentioning specific features, prices, or product details visible on the product card.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "text_to_find": {
+                    "type": "string",
+                    "description": "The exact text or short phrase to highlight (e.g. '24/7 Support', '$99', 'Premium Plan')"
+                }
+            },
+            "required": ["text_to_find"]
+        }
+    })
+
+    # Build session config for GA Realtime API
     session_config = {
-        "model": "gpt-4o-realtime-preview-2024-12-17",
+        "model": "gpt-realtime",
         "modalities": modalities,
         "instructions": instructions,
         "voice": voice,
@@ -901,11 +934,11 @@ async def get_realtime_session_token(req: TokenRequest):
 
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            "https://api.openai.com/v1/realtime/sessions",  # Beta endpoint
+            "https://api.openai.com/v1/realtime/sessions",
             headers={
                 "Authorization": f"Bearer {OPENAI_API_KEY}",
                 "Content-Type": "application/json",
-                "OpenAI-Beta": "realtime=v1"  # Required for Beta
+                "OpenAI-Beta": "realtime=v1"
             },
             json=session_config
         )

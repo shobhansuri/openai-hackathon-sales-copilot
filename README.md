@@ -79,11 +79,12 @@ Products are items the AI can recommend during calls. Each product has:
 
 ### Tools
 
-Tools are actions the AI can perform during conversations. The system comes with a built-in tool:
+Tools are actions the AI can perform during conversations. The system comes with built-in tools:
 
 | Tool | What it does |
 |------|--------------|
 | **recommend_products** | Searches your product catalog and shows matching items in the popup |
+| **highlight_ui_element** | Visually highlights text on screen when AI mentions it (prices, features, product names) |
 
 **Custom tools:**
 You can create additional tools in the Tools page. Each tool needs:
@@ -106,17 +107,23 @@ You can create additional tools in the Tools page. Each tool needs:
 
 3. **Assign Tools** — In Dashboard, edit your agent and enable "recommend_products" tool
 
-4. **Start Copilot** — Go back to home page → Select your agent from the dropdown → Click "Start Copilot" → Allow microphone access
+4. **Start Copilot** — Go back to home page → Select your agent from the dropdown → Click "Start Copilot" → Allow microphone and screen sharing access
 
-5. **Test It** — Speak as if you're a customer: *"I'm looking for something affordable and fuel-efficient"* → Watch the AI suggest relevant products in the floating popup
+5. **Test Voice + Vision** — Ask: *"Can you see my screen?"* → AI describes what's on your screen
 
-6. **View Report** — Click "Stop" → A coaching report appears analyzing the conversation with tips for improvement
+6. **Test Highlighting** — Ask: *"What's the price of [product]?"* → AI mentions the price AND highlights it on screen with a yellow glow
+
+7. **Test Recommendations** — Say: *"I'm looking for something affordable"* → Watch AI suggest products in the floating popup
+
+8. **View Report** — Click "Stop" → A coaching report appears analyzing the conversation with tips for improvement
 
 ---
 
 ## Features
 
-- **Real-time Voice AI** — Uses OpenAI Realtime API with WebRTC for zero-latency conversations
+- **Real-time Voice AI** — Uses OpenAI Realtime API (gpt-realtime) with WebRTC for zero-latency conversations
+- **Screen Vision** — AI can see your screen in real-time via direct image input to Realtime API
+- **Visual Highlighting** — AI highlights prices/features on screen as it mentions them (yellow pulse animation)
 - **Picture-in-Picture** — Recommendations appear in a floating window that stays on top
 - **Product Matching** — AI understands customer needs and finds relevant products
 - **Post-Call Reports** — Get coaching feedback on what went well and what to improve

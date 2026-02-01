@@ -38,6 +38,21 @@
         .card:hover { box-shadow: 0 10px 25px rgba(79, 70, 229, 0.08); border-color: #A5B4FC; }
         .coach-card { background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%); border: 1px solid #C7D2FE; }
         .product-card { background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%); border: 1px solid #BFDBFE; }
+
+        /* Highlight UI Element Animation */
+        @keyframes highlightPulse {
+            0% { background-color: transparent; transform: scale(1); }
+            25% { background-color: #facc15; transform: scale(1.05); box-shadow: 0 0 20px #facc15; }
+            75% { background-color: #facc15; transform: scale(1.05); box-shadow: 0 0 20px #facc15; }
+            100% { background-color: transparent; transform: scale(1); }
+        }
+        .highlight-pulse {
+            animation: highlightPulse 2s ease-in-out;
+            border-radius: 4px;
+            padding: 2px 6px;
+            display: inline;
+            color: #000 !important;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-gray-50 via-indigo-50/30 to-gray-50 text-gray-900 min-h-screen font-sans">
@@ -934,38 +949,43 @@ Stay silent unless you have something truly valuable to add.`;
 
         if (video.videoWidth === 0) return;
 
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0);
+        // Resize to max 512px for cost savings (keeps aspect ratio)
+        const maxSize = 512;
+        let width = video.videoWidth;
+        let height = video.videoHeight;
 
-        const base64 = canvas.toDataURL('image/jpeg', 0.5).split(',')[1];
-
-        try {
-            const res = await fetch('/api/analyze-screenshot', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ image: base64 })
-            });
-            const data = await res.json();
-
-            // Send context to AI via data channel (don't request response - let AI decide)
-            if (dataChannel && dataChannel.readyState === 'open' && data.context) {
-                console.log('Screen context:', data.context);
-                dataChannel.send(JSON.stringify({
-                    type: 'conversation.item.create',
-                    item: {
-                        type: 'message',
-                        role: 'system',
-                        content: [{
-                            type: 'input_text',
-                            text: `[SCREEN UPDATE - DO NOT RESPOND UNLESS CRITICAL]: ${data.context}`
-                        }]
-                    }
-                }));
-                // DON'T request response - let the AI only respond to actual conversation
+        if (width > height) {
+            if (width > maxSize) {
+                height = Math.round(height * maxSize / width);
+                width = maxSize;
             }
-        } catch (err) {
-            console.error('Screenshot analysis error:', err);
+        } else {
+            if (height > maxSize) {
+                width = Math.round(width * maxSize / height);
+                height = maxSize;
+            }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(video, 0, 0, width, height);
+
+        const base64 = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
+
+        // Send image directly to Realtime API (no GPT-4V middleman)
+        if (dataChannel && dataChannel.readyState === 'open') {
+            console.log('📸 Sending screen capture to AI:', width + 'x' + height);
+            dataChannel.send(JSON.stringify({
+                type: 'conversation.item.create',
+                item: {
+                    type: 'message',
+                    role: 'user',
+                    content: [{
+                        type: 'input_image',
+                        image_url: `data:image/jpeg;base64,${base64}`
+                    }]
+                }
+            }));
         }
     }
 
@@ -1069,11 +1089,81 @@ Stay silent unless you have something truly valuable to add.`;
                 // Support both array (new) and single ID (backward compat)
                 const productIds = args.product_ids || (args.product_id ? [args.product_id] : []);
                 showProductCards(productIds, args.reason);
+            } else if (toolName === 'highlight_ui_element') {
+                console.log('✨ Highlighting UI element:', args.text_to_find);
+                highlightTextOnScreen(args.text_to_find);
             } else {
                 console.log('⚠️ Unknown tool:', toolName);
             }
         } catch (err) {
             console.error('❌ Error handling tool call:', err);
+        }
+    }
+
+    // Highlight text on screen with pulsing yellow glow
+    function highlightTextOnScreen(searchText) {
+        if (!searchText) return;
+
+        console.log('🔍 Searching for text to highlight:', searchText);
+
+        // Search in main page product cards and PiP window
+        const containers = [
+            document.getElementById('productCardsContainer'),
+            document.getElementById('productCardsSection'),
+            pipWindow?.document?.body
+        ].filter(Boolean);
+
+        let highlighted = false;
+
+        containers.forEach(container => {
+            if (highlighted) return;
+
+            // Use TreeWalker to find text nodes
+            const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
+            let node;
+
+            while (node = walker.nextNode()) {
+                const text = node.textContent;
+                const lowerText = text.toLowerCase();
+                const lowerSearch = searchText.toLowerCase();
+
+                if (lowerText.includes(lowerSearch)) {
+                    // Found the text - wrap it in a highlight span
+                    const parent = node.parentNode;
+                    if (parent.classList && parent.classList.contains('highlight-pulse')) continue; // Already highlighted
+
+                    const regex = new RegExp(`(${searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                    const parts = text.split(regex);
+
+                    if (parts.length > 1) {
+                        const fragment = document.createDocumentFragment();
+                        parts.forEach(part => {
+                            if (part.toLowerCase() === lowerSearch) {
+                                const span = document.createElement('span');
+                                span.className = 'highlight-pulse';
+                                span.textContent = part;
+                                fragment.appendChild(span);
+
+                                // Remove highlight after 3 seconds
+                                setTimeout(() => {
+                                    span.classList.remove('highlight-pulse');
+                                }, 3000);
+                            } else if (part) {
+                                fragment.appendChild(document.createTextNode(part));
+                            }
+                        });
+
+                        parent.replaceChild(fragment, node);
+                        highlighted = true;
+                        console.log('✅ Highlighted:', searchText);
+                        return;
+                    }
+                }
+            }
+        });
+
+        if (!highlighted) {
+            console.log('⚠️ Text not found on screen:', searchText);
         }
     }
 
@@ -1370,6 +1460,19 @@ Stay silent unless you have something truly valuable to add.`;
                     @keyframes slideIn {
                         from { opacity: 0; transform: translateY(-8px); }
                         to { opacity: 1; transform: translateY(0); }
+                    }
+                    @keyframes highlightPulse {
+                        0% { background-color: transparent; transform: scale(1); }
+                        25% { background-color: #facc15; transform: scale(1.05); box-shadow: 0 0 20px #facc15; }
+                        75% { background-color: #facc15; transform: scale(1.05); box-shadow: 0 0 20px #facc15; }
+                        100% { background-color: transparent; transform: scale(1); }
+                    }
+                    .highlight-pulse {
+                        animation: highlightPulse 2s ease-in-out;
+                        border-radius: 4px;
+                        padding: 2px 6px;
+                        display: inline;
+                        color: #000 !important;
                     }
 
                     body {
@@ -1743,6 +1846,19 @@ Stay silent unless you have something truly valuable to add.`;
                         @keyframes slideIn {
                             from { opacity: 0; transform: translateY(-8px); }
                             to { opacity: 1; transform: translateY(0); }
+                        }
+                        @keyframes highlightPulse {
+                            0% { background-color: transparent; transform: scale(1); }
+                            25% { background-color: #facc15; transform: scale(1.05); box-shadow: 0 0 20px #facc15; }
+                            75% { background-color: #facc15; transform: scale(1.05); box-shadow: 0 0 20px #facc15; }
+                            100% { background-color: transparent; transform: scale(1); }
+                        }
+                        .highlight-pulse {
+                            animation: highlightPulse 2s ease-in-out;
+                            border-radius: 4px;
+                            padding: 2px 6px;
+                            display: inline;
+                            color: #000 !important;
                         }
 
                         body {
