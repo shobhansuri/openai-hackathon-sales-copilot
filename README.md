@@ -124,6 +124,15 @@ You can create additional tools in the Tools page. Each tool needs:
 
 ---
 
+## Next Steps
+
+- Allow file attachments for product documents and manuals
+- Fetch data from PDFs using vector search for contextual retrieval
+- Pass retrieved context to OpenAI Realtime API for informed responses
+- UI for organizations to add custom files and knowledge bases
+
+---
+
 ## Requirements
 
 - Python 3.10+
