@@ -42,6 +42,61 @@
 </head>
 <body class="bg-gradient-to-br from-gray-50 via-indigo-50/30 to-gray-50 text-gray-900 min-h-screen font-sans">
 
+    <!-- Onboarding Modal -->
+    <div id="onboardingModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden slide-in">
+            <div class="bg-gradient-to-r from-teal-500 to-teal-600 px-6 py-5">
+                <h2 class="text-xl font-bold text-white">Welcome, OpenAI Team!</h2>
+                <p class="text-teal-100 text-sm mt-1">Let's walk you through Sales Copilot</p>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="flex items-start gap-4">
+                    <div class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+                        <span class="text-teal-600 font-bold text-sm">1</span>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-900">Select an Agent</h3>
+                        <p class="text-sm text-gray-500">Choose an AI persona from the dropdown (e.g., Car Salesman)</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4">
+                    <div class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+                        <span class="text-teal-600 font-bold text-sm">2</span>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-900">Click "Start Session"</h3>
+                        <p class="text-sm text-gray-500">Allow microphone access when prompted</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4">
+                    <div class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+                        <span class="text-teal-600 font-bold text-sm">3</span>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-900">Start Talking</h3>
+                        <p class="text-sm text-gray-500">Speak as a customer and watch AI suggestions appear in real-time</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4">
+                    <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-900">Pro Tip</h3>
+                        <p class="text-sm text-gray-500">Click "Float" to open a Picture-in-Picture window for suggestions</p>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 pb-6">
+                <button onclick="closeOnboarding()" class="w-full py-3 bg-teal-600 hover:bg-teal-500 text-white font-semibold rounded-xl transition-all">
+                    Got it, let's start!
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Header -->
     <header class="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-40 shadow-sm">
         <div class="max-w-6xl mx-auto flex items-center justify-between">
@@ -456,6 +511,17 @@ Stay silent unless you have something truly valuable to add.`;
         loadAgents();
         loadProducts();
     });
+
+    // ============ ONBOARDING ============
+    function closeOnboarding() {
+        document.getElementById('onboardingModal').style.display = 'none';
+        localStorage.setItem('onboardingSeen', 'true');
+    }
+
+    // Show onboarding only if not seen before
+    if (localStorage.getItem('onboardingSeen')) {
+        document.getElementById('onboardingModal').style.display = 'none';
+    }
 
     // ============ DASHBOARD DROPDOWN ============
     function toggleDashboardMenu() {
