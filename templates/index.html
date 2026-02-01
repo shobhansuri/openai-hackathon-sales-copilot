@@ -44,54 +44,72 @@
 
     <!-- Onboarding Modal -->
     <div id="onboardingModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden slide-in">
-            <div class="bg-gradient-to-r from-teal-500 to-teal-600 px-6 py-5">
-                <h2 class="text-xl font-bold text-white">Welcome, OpenAI Team!</h2>
-                <p class="text-teal-100 text-sm mt-1">Let's walk you through Sales Copilot</p>
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden slide-in">
+            <div class="bg-gradient-to-r from-teal-500 to-teal-600 px-6 py-6">
+                <h2 class="text-2xl font-bold text-white">Welcome, OpenAI Team!</h2>
+                <p class="text-teal-100 text-sm mt-2">Sales Copilot is a real-time voice AI assistant that helps sales reps during live calls. Here's how it works:</p>
             </div>
-            <div class="p-6 space-y-4">
+            <div class="p-6 space-y-5">
                 <div class="flex items-start gap-4">
-                    <div class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
-                        <span class="text-teal-600 font-bold text-sm">1</span>
+                    <div class="w-9 h-9 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+                        <span class="text-teal-600 font-bold">1</span>
                     </div>
                     <div>
                         <h3 class="font-semibold text-gray-900">Select an Agent</h3>
-                        <p class="text-sm text-gray-500">Choose an AI persona from the dropdown (e.g., Car Salesman)</p>
+                        <p class="text-sm text-gray-500">Choose an AI persona from the dropdown. Each agent has a unique personality and product knowledge (e.g., Car Salesman knows about vehicles).</p>
                     </div>
                 </div>
-                <div class="flex items-start gap-4">
-                    <div class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
-                        <span class="text-teal-600 font-bold text-sm">2</span>
+                <div class="flex items-start gap-4 p-3 bg-indigo-50 rounded-xl border-2 border-indigo-300">
+                    <div class="w-9 h-9 rounded-full bg-indigo-500 flex items-center justify-center flex-shrink-0">
+                        <span class="text-white font-bold">2</span>
                     </div>
                     <div>
-                        <h3 class="font-semibold text-gray-900">Click "Start Session"</h3>
-                        <p class="text-sm text-gray-500">Allow microphone access when prompted</p>
+                        <h3 class="font-semibold text-indigo-900">Click "Start Session"</h3>
+                        <p class="text-sm text-indigo-700">This is the main action! Click the purple button below to begin. Allow microphone access when prompted.</p>
+                        <div class="mt-2 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                            </svg>
+                            <span class="text-xs font-medium text-indigo-600">Look for the "Start Session" button after closing this</span>
+                        </div>
                     </div>
                 </div>
                 <div class="flex items-start gap-4">
-                    <div class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
-                        <span class="text-teal-600 font-bold text-sm">3</span>
+                    <div class="w-9 h-9 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+                        <span class="text-teal-600 font-bold">3</span>
                     </div>
                     <div>
-                        <h3 class="font-semibold text-gray-900">Start Talking</h3>
-                        <p class="text-sm text-gray-500">Speak as a customer and watch AI suggestions appear in real-time</p>
+                        <h3 class="font-semibold text-gray-900">Talk Like a Customer</h3>
+                        <p class="text-sm text-gray-500">Speak naturally as if you're a customer. Try saying: <em>"I'm looking for something fuel-efficient"</em> or <em>"What do you recommend under $30,000?"</em></p>
                     </div>
                 </div>
                 <div class="flex items-start gap-4">
-                    <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                        <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    <div class="w-9 h-9 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+                        <span class="text-teal-600 font-bold">4</span>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-900">Watch AI Suggestions Appear</h3>
+                        <p class="text-sm text-gray-500">The AI listens in real-time and recommends matching products. Click "Float" for a Picture-in-Picture popup that stays on top.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4 p-3 bg-yellow-50 rounded-xl border border-yellow-200">
+                    <div class="w-9 h-9 rounded-full bg-yellow-100 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
                         </svg>
                     </div>
                     <div>
-                        <h3 class="font-semibold text-gray-900">Pro Tip</h3>
-                        <p class="text-sm text-gray-500">Click "Float" to open a Picture-in-Picture window for suggestions</p>
+                        <h3 class="font-semibold text-yellow-800">Pro Tip</h3>
+                        <p class="text-sm text-yellow-700">After the call, click "Stop" to see a coaching report with tips on what went well and what to improve!</p>
                     </div>
                 </div>
             </div>
             <div class="px-6 pb-6">
-                <button onclick="closeOnboarding()" class="w-full py-3 bg-teal-600 hover:bg-teal-500 text-white font-semibold rounded-xl transition-all">
-                    Got it, let's start!
+                <button onclick="closeOnboardingAndHighlight()" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2">
+                    <span>Got it, let's start!</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                    </svg>
                 </button>
             </div>
         </div>
@@ -111,6 +129,12 @@
                     <span class="px-2.5 py-1 bg-black text-white text-xs font-semibold rounded-full">OpenAI Hackathon</span>
                 </div>
             </div>
+            <button onclick="showOnboarding()" class="px-3 py-1.5 bg-teal-50 hover:bg-teal-100 border border-teal-200 rounded-lg transition-colors flex items-center gap-2" title="How to use">
+                <svg class="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span class="text-xs font-medium text-teal-700">Welcome OpenAI Team</span>
+            </button>
             <div id="status" class="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 border border-gray-200">
                 <span class="w-2 h-2 rounded-full bg-gray-400"></span>
                 <span class="text-xs font-medium text-gray-500">Disconnected</span>
@@ -516,6 +540,23 @@ Stay silent unless you have something truly valuable to add.`;
     function closeOnboarding() {
         document.getElementById('onboardingModal').style.display = 'none';
         localStorage.setItem('onboardingSeen', 'true');
+    }
+
+    function closeOnboardingAndHighlight() {
+        closeOnboarding();
+        // Highlight the Start Session button
+        const startBtn = document.getElementById('startBtn');
+        startBtn.classList.add('ring-4', 'ring-indigo-300', 'ring-offset-2');
+        startBtn.style.animation = 'pulse 1.5s ease-in-out 3';
+        // Remove highlight after 5 seconds
+        setTimeout(() => {
+            startBtn.classList.remove('ring-4', 'ring-indigo-300', 'ring-offset-2');
+            startBtn.style.animation = '';
+        }, 5000);
+    }
+
+    function showOnboarding() {
+        document.getElementById('onboardingModal').style.display = 'flex';
     }
 
     // Show onboarding only if not seen before
